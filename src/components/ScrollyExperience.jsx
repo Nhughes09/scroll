@@ -6,10 +6,10 @@ gsap.registerPlugin(ScrollTrigger);
 
 gsap.registerPlugin(ScrollTrigger);
 
-// Video sources - All Intra encoded for smooth scrubbing (2 videos only)
+// Video sources - hosted on GitHub raw for CDN delivery
 const videoSources = [
-    "/videos/hero-scrub.mp4",
-    "/videos/problem-scrub.mp4"
+    "https://raw.githubusercontent.com/Nhughes09/scroll/main/public/videos/hero-scrub.mp4",
+    "https://raw.githubusercontent.com/Nhughes09/scroll/main/public/videos/problem-scrub.mp4"
 ];
 
 const ScrollyExperience = () => {
