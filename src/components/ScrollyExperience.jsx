@@ -6,11 +6,10 @@ gsap.registerPlugin(ScrollTrigger);
 
 gsap.registerPlugin(ScrollTrigger);
 
-// Video sources - All Intra encoded for smooth scrubbing
+// Video sources - All Intra encoded for smooth scrubbing (2 videos only)
 const videoSources = [
     "/videos/hero-scrub.mp4",
-    "/videos/problem-scrub.mp4",
-    "/videos/extra-scrub.mp4"
+    "/videos/problem-scrub.mp4"
 ];
 
 const ScrollyExperience = () => {
@@ -19,8 +18,8 @@ const ScrollyExperience = () => {
     const [videos, setVideos] = useState([]);
     const [loaded, setLoaded] = useState(false);
 
-    // Total scroll height multiplier (e.g., 1400vh)
-    const SCROLL_HEIGHT = '1400vh';
+    // Total scroll height (800vh for 2 videos)
+    const SCROLL_HEIGHT = '600vh';
 
     const renderCheck = (video, ctx, w, h) => {
         // Helper specifically for initial load render
@@ -118,6 +117,9 @@ const ScrollyExperience = () => {
         const offsetX = (vw - nw) / 2;
         const offsetY = (vh - nh) / 2;
 
+        // Clear canvas before drawing to fix blank screen on scroll-up
+        ctx.clearRect(0, 0, vw, vh);
+        
         ctx.globalAlpha = opacity;
         ctx.drawImage(video, offsetX, offsetY, nw, nh);
         ctx.globalAlpha = 1.0;
@@ -153,20 +155,18 @@ const ScrollyExperience = () => {
             }
         });
 
-        // --- VIDEO SEQUENCING LOGIC ---
+        // --- VIDEO SEQUENCING LOGIC (2 VIDEOS ONLY) ---
         // We map the scroll distance (0 to 1) to our video phases
         const scrollObj = { 
             frame1: 0, 
             frame2: 0, 
-            frame3: 0,
-            blend1: 0, // V1 -> V2
-            blend2: 0  // V2 -> V3
+            blend1: 0 // V1 -> V2
         };
 
-        // PHASE 1: Video 1 plays (0% -> 15%) - SHORTENED to show DNA video sooner
+        // PHASE 1: Video 1 plays (0% -> 20%) - Gold particles hero
         tl.to(scrollObj, {
             frame1: 1,
-            duration: 0.15,
+            duration: 0.20,
             ease: "none",
             onUpdate: () => {
                 smartSeek(videos[0], scrollObj.frame1);
@@ -174,73 +174,35 @@ const ScrollyExperience = () => {
             }
         }, 0);
 
-        // PHASE 2: Blend V1 -> V2 (15% -> 22%) - starts earlier now
-        // Start moving V2 immediately during blend (0 -> 20% progress)
+        // PHASE 2: Blend V1 -> V2 (20% -> 28%)
         tl.to(scrollObj, {
-            frame2: 0.20, 
-            duration: 0.07,
+            frame2: 0.15, 
+            duration: 0.08,
             ease: "none"
-        }, 0.15);
+        }, 0.20);
 
         tl.to(scrollObj, {
             blend1: 1,
-            duration: 0.07,
+            duration: 0.08,
             ease: "none",
              onUpdate: () => {
-                // Draw V1 (bottom, held at end)
                 smartSeek(videos[0], 1); 
                 renderFrame(videos[0], 1);
-                
-                // Draw V2 (top, fading in AND moving)
                 smartSeek(videos[1], scrollObj.frame2); 
                 renderFrame(videos[1], scrollObj.blend1);
             }
-        }, 0.15);
+        }, 0.20);
 
-        // PHASE 3: Video 2 plays (22% -> 60%) - DNA video gets more screen time
-        // Continue V2 from 20% -> 100%
+        // PHASE 3: Video 2 (DNA) plays (28% -> 100%) - DNA video for rest of page
         tl.to(scrollObj, {
             frame2: 1,
-            duration: 0.38,
+            duration: 0.72,
             ease: "none",
              onUpdate: () => {
                 smartSeek(videos[1], scrollObj.frame2);
                 renderFrame(videos[1], 1);
             }
-        }, 0.22);
-
-        // PHASE 4: Blend V2 -> V3 (60% -> 68%)
-        // Start moving V3 immediately during blend (0 -> ~25% progress)
-        tl.to(scrollObj, {
-            frame3: 0.25,
-            duration: 0.08,
-            ease: "none"
-        }, 0.60);
-
-         tl.to(scrollObj, {
-            blend2: 1,
-            duration: 0.08,
-             ease: "none",
-            onUpdate: () => {
-                smartSeek(videos[1], 1); 
-                renderFrame(videos[1], 1);
-
-                smartSeek(videos[2], scrollObj.frame3);
-                renderFrame(videos[2], scrollObj.blend2);
-            }
-        }, 0.60);
-
-        // PHASE 5: Video 3 plays (68% -> 100%)
-        // Continue V3 from ~25% -> 100%
-        tl.to(scrollObj, {
-            frame3: 1,
-            duration: 0.32,
-             ease: "none",
-            onUpdate: () => {
-                smartSeek(videos[2], scrollObj.frame3);
-                renderFrame(videos[2], 1);
-            }
-        }, 0.68);
+        }, 0.28);
 
 
         // --- CONTENT ANIMATIONS ---
@@ -319,18 +281,18 @@ const ScrollyExperience = () => {
             <div className="scroll-track absolute top-0 left-0 w-full" style={{ height: SCROLL_HEIGHT, zIndex: 0 }} />
 
             {/* 3. NAVIGATION (FIXED Z-40) */}
-            <nav className="fixed top-0 left-0 w-full z-[40] flex justify-between items-center px-8 py-6 bg-black/40 backdrop-blur-md border-b border-white/5">
+            <nav className="fixed top-0 left-0 w-full z-[40] flex justify-between items-center px-8 py-6 bg-black/60 backdrop-blur-xl border-b border-white/10">
                  <div className="text-xl font-bold tracking-tighter text-white">
                     HHeuristics
                  </div>
                  <div className="hidden md:flex gap-8 text-sm font-medium text-gray-300">
                     {['Reports', 'Consulting', 'Insights', 'Data'].map((item) => (
-                        <a key={item} href={`#${item.toLowerCase()}`} className="hover:text-[#D4AF37] transition-colors duration-300">
+                        <a key={item} href={`https://www.hheuristics.com/${item.toLowerCase()}`} target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors duration-300">
                             {item}
                         </a>
                     ))}
                  </div>
-                 <a href="#contact" className="px-5 py-2 rounded-full border border-white/20 text-sm font-medium hover:bg-white hover:text-black transition-all duration-300">
+                 <a href="https://www.upwork.com/agencies/1987574673660266609/" target="_blank" rel="noopener noreferrer" className="px-5 py-2 rounded-full border border-white/30 text-sm font-medium hover:bg-white hover:text-black transition-all duration-300">
                     Get Started
                  </a>
             </nav>
@@ -362,71 +324,72 @@ const ScrollyExperience = () => {
             <div className="content-flow absolute top-0 left-0 w-full z-[30] pointer-events-none flex flex-col" style={{ height: SCROLL_HEIGHT }}>
                 
                 {/* SECTION 1: HERO (Visible immediately) */}
-                <section className="h-screen w-full flex items-center justify-center relative pointer-events-auto">
+                <section className="h-screen w-full flex items-center justify-center relative pointer-events-auto pt-64">
                     <div className="hero-section text-center px-6 max-w-5xl mx-auto">
-                        <h1 className="text-7xl md:text-9xl font-black tracking-tight mb-8 text-white">
+                        <h1 className="text-7xl md:text-9xl font-black tracking-tight mb-8 text-white drop-shadow-[0_4px_30px_rgba(255,255,255,0.15)]">
                             HHeuristics
                         </h1>
-                        <p className="text-4xl md:text-6xl font-semibold mb-12 text-gray-200">
+                        <p className="text-4xl md:text-6xl font-semibold mb-12 text-white/90 drop-shadow-lg">
                             Consulting & Insights
                         </p>
-                        <p className="text-2xl md:text-4xl max-w-4xl mx-auto mb-16 leading-relaxed text-gray-300">
+                        <p className="text-xl md:text-2xl max-w-4xl mx-auto mb-16 leading-relaxed text-white/80 drop-shadow-md backdrop-blur-sm bg-black/20 rounded-2xl p-6">
                             Actionable intelligence for complex decisions.<br className="hidden md:block"/>
                             We deliver rigorous, data-driven market research and strategic advisory that helps executives, investors, and policymakers anticipate trends, evaluate opportunities, and navigate uncertainty with confidence.
                         </p>
-                        <div className="flex flex-col sm:flex-row gap-8 justify-center pointer-events-auto">
-                            <a href="#reports" className="border-2 border-[#D4AF37] rounded-full px-8 py-4 text-xl md:text-2xl font-medium text-white hover:bg-[#D4AF37] hover:text-black transition duration-300">
+                        <div className="flex flex-col sm:flex-row gap-6 justify-center pointer-events-auto">
+                            <a href="https://www.hheuristics.com/reports" target="_blank" rel="noopener noreferrer" className="border-2 border-white rounded-full px-8 py-4 text-xl md:text-2xl font-medium text-white hover:bg-white hover:text-black transition duration-300 backdrop-blur-sm">
                                 Explore Reports
                             </a>
-                            <a href="#contact" className="border-2 border-[#D4AF37] rounded-full px-8 py-4 text-xl md:text-2xl font-medium text-white hover:bg-[#D4AF37] hover:text-black transition duration-300">
+                            <a href="https://www.upwork.com/agencies/1987574673660266609/" target="_blank" rel="noopener noreferrer" className="bg-white text-black rounded-full px-8 py-4 text-xl md:text-2xl font-medium hover:bg-white/80 transition duration-300">
                                 Contact Us
                             </a>
                         </div>
-                        <p className="mt-32 text-xl opacity-70 text-gray-400 animate-pulse">
+                        <p className="mt-32 text-xl opacity-70 text-white/60 animate-pulse">
                             Scroll to explore
                         </p>
                     </div>
                 </section>
 
-                <div className="h-[20vh]"></div>
+                <div className="h-[8vh]"></div>
 
                 {/* SECTION 2: PITCH */}
-                <section className="min-h-screen w-full flex items-center justify-center pointer-events-auto py-20">
-                     <div className="max-w-6xl px-8 text-center">
-                        <h2 className="text-6xl md:text-8xl font-black mb-16 text-white leading-tight">
-                            Research that <span className="text-[#D4AF37]">drives decisions</span>
+                <section className="min-h-[60vh] w-full flex items-center justify-center pointer-events-auto py-12">
+                     <div className="max-w-6xl px-8 text-center backdrop-blur-sm bg-black/30 rounded-3xl py-16">
+                        <h2 className="text-5xl md:text-7xl font-black mb-16 text-white leading-tight drop-shadow-[0_2px_20px_rgba(255,255,255,0.1)]">
+                            Research that <span className="bg-gradient-to-r from-white via-gray-200 to-white bg-clip-text text-transparent">drives decisions</span>
                         </h2>
-                        <p className="text-2xl md:text-4xl max-w-5xl mx-auto text-gray-300 mb-12">
+                        <p className="text-xl md:text-2xl max-w-5xl mx-auto text-white/80 mb-12 leading-relaxed">
                             We combine deep domain expertise with quantitative rigor to produce research that stands apart—comprehensive, forward-looking, and designed for strategic application.
                         </p>
                     </div>
                 </section>
 
                 {/* SECTION 3: FEATURES GRID */}
-                <section className="min-h-screen w-full flex items-center justify-center pointer-events-auto py-20">
+                <section className="min-h-[70vh] w-full flex items-center justify-center pointer-events-auto py-12">
                      <div className="max-w-7xl px-8 w-full">
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                             {[
                                 { title: "Rigorous Analysis", desc: "Every report integrates primary research, proprietary datasets, and structured analytical frameworks to deliver insights you can act on." },
                                 { title: "Executive Clarity", desc: "Complex markets distilled into clear, accessible intelligence tailored for time-constrained decision-makers." },
                                 { title: "Global Perspective", desc: "Cross-border analysis spanning regulatory regimes, market dynamics, and competitive landscapes worldwide." },
                                 { title: "Trusted Independence", desc: "Objective, evidence-based research free from conflicts of interest—insight you can trust." }
                             ].map((card, i) => (
-                                <div key={i} className="bg-black/40 backdrop-blur-md border border-white/10 p-10 rounded-3xl hover:border-[#D4AF37]/50 transition duration-500">
-                                    <h3 className="text-2xl md:text-3xl font-bold mb-4 text-white">{card.title}</h3>
-                                    <p className="text-lg text-gray-400 leading-relaxed">{card.desc}</p>
+                                <div key={i} className="bg-black/50 backdrop-blur-xl border border-white/20 p-8 rounded-2xl hover:border-white/50 hover:bg-black/70 transition duration-500 group">
+                                    <h3 className="text-xl md:text-2xl font-bold mb-4 text-white group-hover:text-white transition">{card.title}</h3>
+                                    <p className="text-base text-white/70 leading-relaxed">{card.desc}</p>
                                 </div>
                             ))}
                         </div>
                     </div>
                 </section>
 
-                <div className="h-[20vh]"></div>
+                <div className="h-[8vh]"></div>
 
                 {/* SECTION 4: FEATURED REPORTS */}
-                <section id="reports" className="min-h-screen w-full flex flex-col items-center justify-center pointer-events-auto py-20">
-                     <h2 className="text-5xl md:text-7xl font-black mb-6 text-center text-white">Latest Research</h2>
-                     <p className="text-xl text-gray-400 mb-16 max-w-3xl text-center">In-depth analysis across technology, finance, energy, and emerging strategic domains.</p>
+                <section id="reports" className="min-h-[80vh] w-full flex flex-col items-center justify-center pointer-events-auto py-12">
+                     <div className="backdrop-blur-xl bg-black/60 rounded-3xl p-12 max-w-7xl mx-8">
+                     <h2 className="text-5xl md:text-7xl font-black mb-6 text-center text-white drop-shadow-[0_2px_10px_rgba(0,0,0,0.9)]">Latest Research</h2>
+                     <p className="text-xl text-white mb-12 max-w-3xl text-center mx-auto drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]">In-depth analysis across technology, finance, energy, and emerging strategic domains.</p>
                      
                      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-7xl px-8 w-full">
                         {[
@@ -451,27 +414,29 @@ const ScrollyExperience = () => {
                               desc: "Data-driven analysis of shifting consumer behavior, discretionary spending patterns, and macroeconomic impacts."
                             }
                         ].map((report, i) => (
-                             <div key={i} className="bg-gradient-to-br from-gray-900/80 to-black/80 backdrop-blur-xl border border-white/10 p-10 rounded-[2rem] group cursor-pointer hover:transform hover:scale-[1.02] transition duration-500 flex flex-col justify-between">
+                             <a key={i} href="https://www.hheuristics.com/reports" target="_blank" rel="noopener noreferrer" className="bg-black/70 backdrop-blur-xl border border-white/20 p-8 rounded-2xl group cursor-pointer hover:transform hover:scale-[1.02] hover:border-white/50 transition duration-500 flex flex-col justify-between">
                                 <div>
-                                    <div className="text-[#D4AF37] font-mono mb-4 text-sm tracking-wider uppercase">{report.cat}</div>
-                                    <h3 className="text-3xl font-bold mb-4 text-white group-hover:text-[#D4AF37] transition">{report.title}</h3>
-                                    <p className="text-lg text-gray-400 mb-8">{report.desc}</p>
+                                    <div className="text-white/80 font-mono mb-3 text-sm tracking-wider uppercase">{report.cat}</div>
+                                    <h3 className="text-2xl font-bold mb-3 text-white group-hover:text-white transition drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)]">{report.title}</h3>
+                                    <p className="text-base text-white/90 mb-6 drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">{report.desc}</p>
                                 </div>
-                                <span className="text-white font-medium border-b border-[#D4AF37] pb-1 w-max">View Report →</span>
-                            </div>
+                                <span className="text-white font-medium border-b border-white/50 pb-1 w-max">View Report →</span>
+                            </a>
                         ))}
                      </div>
-                     <div className="mt-16 text-center">
-                        <a href="#" className="text-white border border-white/20 px-8 py-3 rounded-full hover:bg-white hover:text-black transition">View All Reports</a>
+                     <div className="mt-10 text-center">
+                        <a href="https://www.hheuristics.com/reports" target="_blank" rel="noopener noreferrer" className="text-white border-2 border-white px-8 py-3 rounded-full hover:bg-white hover:text-black transition font-bold">View All Reports</a>
+                     </div>
                      </div>
                 </section>
 
-                 <div className="h-[20vh]"></div>
+                 <div className="h-[8vh]"></div>
 
                  {/* SECTION 5: DOMAINS */}
-                 <section className="min-h-screen w-full flex flex-col items-center justify-center pointer-events-auto py-20">
-                    <h2 className="text-4xl md:text-6xl font-black mb-8 text-center text-white">Research Coverage</h2>
-                    <p className="text-xl text-gray-400 mb-16 text-center block">Deep expertise across the sectors shaping the future economy.</p>
+                 <section className="min-h-[90vh] w-full flex flex-col items-center justify-center pointer-events-auto py-16">
+                    <div className="backdrop-blur-xl bg-black/60 rounded-3xl p-12 max-w-7xl mx-8">
+                    <h2 className="text-4xl md:text-6xl font-black mb-6 text-center text-white drop-shadow-[0_2px_10px_rgba(0,0,0,0.9)]">Research Coverage</h2>
+                    <p className="text-xl text-white mb-12 text-center block drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]">Deep expertise across the sectors shaping the future economy.</p>
                     
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-7xl px-8 w-full">
                         {[
@@ -482,40 +447,43 @@ const ScrollyExperience = () => {
                             { title: "B2B Commerce", desc: "Digital procurement, marketplaces, trade" },
                             { title: "Emerging Technologies", desc: "Quantum, autonomous systems, next-gen infra" }
                         ].map((domain, i) => (
-                             <div key={i} className="bg-white/5 backdrop-blur-sm border border-white/5 p-8 rounded-2xl text-left hover:bg-white/10 transition">
-                                <h4 className="text-xl md:text-2xl font-bold text-white mb-2">{domain.title}</h4>
-                                <p className="text-gray-400 text-sm md:text-base">{domain.desc}</p>
+                             <div key={i} className="bg-black/50 backdrop-blur-md border border-white/20 p-6 rounded-xl text-left hover:bg-black/70 hover:border-white/40 transition">
+                                <h4 className="text-lg md:text-xl font-bold text-white mb-2 drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)]">{domain.title}</h4>
+                                <p className="text-white/90 text-sm drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">{domain.desc}</p>
                             </div>
                         ))}
                     </div>
+                    </div>
                  </section>
 
-                 <div className="h-[20vh]"></div>
+                 <div className="h-[8vh]"></div>
 
                  {/* SECTION 6: PLATFORMS / CTA */}
-                 <section className="min-h-screen w-full flex flex-col items-center justify-center pointer-events-auto py-20 pb-40">
-                    <h2 className="text-5xl md:text-7xl font-black mb-12 text-center text-white">Visit Our Platforms</h2>
-                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl px-8 w-full mb-24">
+                 <section className="min-h-[80vh] w-full flex flex-col items-center justify-center pointer-events-auto py-12 pb-24">
+                    <div className="backdrop-blur-xl bg-black/60 rounded-3xl p-12 max-w-6xl mx-8">
+                    <h2 className="text-5xl md:text-7xl font-black mb-10 text-center text-white drop-shadow-[0_2px_10px_rgba(0,0,0,0.9)]">Visit Our Platforms</h2>
+                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full mb-12">
                         {[
-                            { name: 'MarketResearch.com', desc: 'Browse and purchase our complete library.', link: 'View Publications →' },
-                            { name: 'Substack', desc: 'Subscribe to our newsletter for regular insights.', link: 'Read & Subscribe →' },
-                            { name: 'Upwork', desc: 'Engage our team for custom research projects.', link: 'View Agency Profile →' }
+                            { name: 'MarketResearch.com', desc: 'Browse and purchase our complete library.', link: 'View Publications →', url: 'https://www.marketresearch.com/' },
+                            { name: 'Substack', desc: 'Subscribe to our newsletter for regular insights.', link: 'Read & Subscribe →', url: 'https://hheuristics.substack.com' },
+                            { name: 'Upwork', desc: 'Engage our team for custom research projects.', link: 'View Agency Profile →', url: 'https://www.upwork.com/agencies/1987574673660266609/' }
                         ].map(p => (
-                            <div key={p.name} className="flex flex-col items-center text-center p-8 bg-white/5 rounded-3xl border border-white/10 hover:border-[#D4AF37]/30 transition">
-                                <h3 className="text-2xl font-bold text-white mb-4">{p.name}</h3>
-                                <p className="text-gray-400 mb-6">{p.desc}</p>
-                                <span className="text-[#D4AF37] font-medium">{p.link}</span>
-                            </div>
+                            <a key={p.name} href={p.url} target="_blank" rel="noopener noreferrer" className="flex flex-col items-center text-center p-6 bg-black/50 rounded-2xl border border-white/20 hover:border-white/50 transition hover:bg-black/70">
+                                <h3 className="text-xl font-bold text-white mb-3 drop-shadow-[0_1px_3px_rgba(0,0,0,0.8)]">{p.name}</h3>
+                                <p className="text-white/90 mb-4 drop-shadow-[0_1px_2px_rgba(0,0,0,0.8)]">{p.desc}</p>
+                                <span className="text-white font-medium">{p.link}</span>
+                            </a>
                         ))}
                      </div>
                      
-                     <div className="text-center p-12 bg-gradient-to-b from-transparent to-[#D4AF37]/10 rounded-3xl border border-[#D4AF37]/20 max-w-4xl mx-8">
-                        <h3 className="text-4xl md:text-5xl font-bold mb-6 text-white">Need Custom Research?</h3>
-                        <p className="text-xl text-gray-300 mb-8 max-w-2xl mx-auto">None of the above fit? We deliver bespoke research and strategic advisory tailored to your specific decision requirements.</p>
-                        <a href="#contact" className="inline-block bg-[#D4AF37] text-black text-xl md:text-2xl font-bold px-10 py-4 rounded-full hover:bg-white transition duration-300 shadow-[0_0_30px_rgba(212,175,55,0.2)]">
+                     <div className="text-center p-8 bg-black/50 rounded-2xl border border-white/20 mt-6">
+                        <h3 className="text-3xl md:text-4xl font-bold mb-4 text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.9)]">Need Custom Research?</h3>
+                        <p className="text-lg text-white mb-6 max-w-2xl mx-auto drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]">We deliver bespoke research and strategic advisory tailored to your specific decision requirements.</p>
+                        <a href="https://www.upwork.com/agencies/1987574673660266609/" target="_blank" rel="noopener noreferrer" className="inline-block bg-white text-black text-lg font-bold px-8 py-3 rounded-full hover:bg-white/90 transition duration-300 shadow-[0_0_30px_rgba(255,255,255,0.3)]">
                             Explore Advisory Services
                         </a>
                      </div>
+                    </div>
                  </section>
                 
                 {/* FOOTER */}
@@ -523,7 +491,7 @@ const ScrollyExperience = () => {
                     <div className="max-w-7xl mx-auto px-8 grid grid-cols-1 md:grid-cols-4 gap-12 text-left mb-16">
                         <div className="col-span-1 md:col-span-2">
                              <h4 className="text-3xl font-black text-white mb-6">HHeuristics</h4>
-                             <p className="text-gray-400 text-lg mb-6">Research for a changing world.</p>
+                             <p className="text-white/80 text-lg mb-6 drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)]">Research for a changing world.</p>
                              <address className="text-gray-500 not-italic leading-relaxed">
                                  Suite 962, 37 Westminster Buildings<br/>
                                  Theatre Square<br/>
@@ -534,18 +502,18 @@ const ScrollyExperience = () => {
                         <div>
                             <h5 className="text-white font-bold mb-4">Navigation</h5>
                             <ul className="space-y-2 text-gray-400">
-                                <li><a href="#" className="hover:text-[#D4AF37]">Reports</a></li>
-                                <li><a href="#" className="hover:text-[#D4AF37]">Consulting</a></li>
-                                <li><a href="#" className="hover:text-[#D4AF37]">Insights</a></li>
-                                <li><a href="#" className="hover:text-[#D4AF37]">Data</a></li>
+                                <li><a href="https://www.hheuristics.com/reports" target="_blank" rel="noopener noreferrer" className="hover:text-white">Reports</a></li>
+                                <li><a href="https://www.hheuristics.com/consulting" target="_blank" rel="noopener noreferrer" className="hover:text-white">Consulting</a></li>
+                                <li><a href="https://www.hheuristics.com/insights" target="_blank" rel="noopener noreferrer" className="hover:text-white">Insights</a></li>
+                                <li><a href="https://www.hheuristics.com/data" target="_blank" rel="noopener noreferrer" className="hover:text-white">Data</a></li>
                             </ul>
                         </div>
                         <div>
                             <h5 className="text-white font-bold mb-4">Find Our Work</h5>
                              <ul className="space-y-2 text-gray-400">
-                                <li><a href="#" className="hover:text-[#D4AF37]">MarketResearch.com</a></li>
-                                <li><a href="#" className="hover:text-[#D4AF37]">Substack</a></li>
-                                <li><a href="#" className="hover:text-[#D4AF37]">Upwork</a></li>
+                                <li><a href="https://www.marketresearch.com/" target="_blank" rel="noopener noreferrer" className="hover:text-white">MarketResearch.com</a></li>
+                                <li><a href="https://hheuristics.substack.com" target="_blank" rel="noopener noreferrer" className="hover:text-white">Substack</a></li>
+                                <li><a href="https://www.upwork.com/agencies/1987574673660266609/" target="_blank" rel="noopener noreferrer" className="hover:text-white">Upwork</a></li>
                             </ul>
                         </div>
                     </div>
