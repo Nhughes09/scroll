@@ -1,3 +1,7 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
 
 * {
@@ -153,10 +157,10 @@ body {
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
-  animation: letterFadeIn 0.8s ease-out forwards;
-  animation-delay: calc(var(--letter-index, 0) * 0.05s);
-  opacity: 0;
-  transform: translateY(30px);
+  /* animation: letterFadeIn 0.8s ease-out forwards; */
+  /* animation-delay: calc(var(--letter-index, 0) * 0.05s); */
+  opacity: 1;
+  transform: translateY(0);
 }
 
 .title-letter:nth-child(1) { --letter-index: 0; }
@@ -197,8 +201,8 @@ body {
   font-weight: 400;
   color: rgba(255, 255, 255, 0.8);
   margin-bottom: 2rem;
-  animation: fadeInUp 1s ease-out 0.6s forwards;
-  opacity: 0;
+  /* animation: fadeInUp 1s ease-out 0.6s forwards; */
+  opacity: 1;
 }
 
 @keyframes fadeInUp {
